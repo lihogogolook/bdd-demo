@@ -1,0 +1,19 @@
+# 依賴模組
+/vendor/
+
+# 編譯後的二進位檔案
+bdd-demo
+*.exe
+
+# 測試快取
+*.test
+
+# IDE 相關檔案
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 作業系統相關檔案
+.DS_Store
+Thumbs.db
