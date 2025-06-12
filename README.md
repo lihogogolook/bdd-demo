@@ -1,128 +1,87 @@
-# Phone Risk Assessment API
+# BDD 測試框架介紹
 
-這是一個使用 Go 語言和 Gin 框架建立的電話號碼風險評估 API 服務。
+## 1. Cucumber 與 Gherkin 語法
 
-## 功能特色
+**Cucumber** 是一個行為驅動開發 (BDD) 工具，使用自然語言描述測試場景。**Gherkin** 是其描述語法，具有以下關鍵字：
 
-- 🔍 **電話號碼驗證**：支援台灣手機號碼和市話格式驗證
-- 📊 **風險評估**：根據電話號碼特徵計算風險分數 (0-100)
-- 🎯 **風險等級**：提供三級風險分類 (低/中/高)
-- 🌐 **RESTful API**：標準的 REST API 設計
-- ❤️ **健康檢查**：服務狀態監控端點
+- `Feature`：功能描述
+- `Scenario`：測試場景
+- `Given`：前置條件
+- `When`：執行動作
+- `Then`：預期結果
+- `And`：連接詞
 
-## 專案結構
-
-```
-bdd-demo/
-├── go.mod
-├── main.go                    # 主程式入口
-├── README.md
-├── api_test.md               # API 測試範例
-├── .gitignore
-└── internal/
-    ├── models/
-    │   └── phone.go          # 資料模型
-    ├── services/
-    │   └── phone_risk.go     # 風險評估服務
-    └── handlers/
-        └── phone.go          # API 處理器
+```gherkin
+Feature: 電話號碼風險評估
+  Scenario: 評估手機號碼風險
+    Given 系統已啟動
+    When 我提交手機號碼 "0987654321"
+    Then 應該返回風險分數
+    And 風險等級應該是 "medium"
 ```
 
-## 快速開始
+## 2. Godog 基本使用
 
-### 1. 安裝相依套件
+**Godog** 是 Go 語言的 Cucumber 實作：
+
+### 安裝
 
 ```bash
-go mod tidy
+go get github.com/cucumber/godog/cmd/godog
 ```
 
-### 2. 啟動服務
+### 執行測試
 
 ```bash
-go run main.go
+godog features/
 ```
 
-服務將在 `http://localhost:8080` 啟動
+### 步驟定義範例
 
-### 3. 測試 API
+```go
+func InitializeTestSuite(ctx *godog.TestSuiteContext) {
+    ctx.BeforeSuite(func() { /* 初始化 */ })
+}
 
-#### 健康檢查
-
-```bash
-curl -X GET http://localhost:8080/health
-```
-
-#### 評估電話號碼風險
-
-```bash
-curl -X POST http://localhost:8080/api/phone/risk \
-  -H "Content-Type: application/json" \
-  -d '{"phone_number": "0987654321"}'
-```
-
-## API 端點
-
-| 方法 | 路徑              | 描述             |
-| ---- | ----------------- | ---------------- |
-| GET  | `/`               | API 服務資訊     |
-| GET  | `/health`         | 健康檢查         |
-| POST | `/api/phone/risk` | 電話號碼風險評估 |
-
-## 請求/回應格式
-
-### 風險評估請求
-
-```json
-{
-  "phone_number": "0987654321"
+func InitializeScenario(ctx *godog.ScenarioContext) {
+    ctx.Step(`^我提交手機號碼 "([^"]*)"$`, iSubmitPhoneNumber)
+    ctx.Step(`^應該返回風險分數$`, shouldReturnRiskScore)
 }
 ```
 
-### 成功回應
+## 3. AI 溝通的 Prompt 與 Feature Test
 
-```json
-{
-  "phone_number": "0987654321",
-  "risk_score": 75.5,
-  "risk_level": "medium",
-  "message": "電話號碼風險評估完成"
-}
+### 與 AI 協作的最佳實務
+
+1. **清晰的需求描述**
+
+   ```
+   "請為電話風險評估 API 撰寫 BDD 測試，包含：
+   - 有效號碼驗證
+   - 風險分數計算
+   - 錯誤處理"
+   ```
+
+2. **結構化的 Feature 檔案**
+
+   - 使用描述性的場景名稱
+   - 明確的步驟定義
+   - 涵蓋正常流程和異常情況
+
+3. **可維護的測試設計**
+   - 模組化步驟定義
+   - 資料驅動測試
+   - 清楚的斷言邏輯
+
+### 範例 Prompt
+
+```gherkin
+Feature: 電話號碼風險評估
+  Scenario: 評估手機號碼風險
+    Given 系統已啟動
+    When 我提交手機號碼 "0987654321"
+    Then 應該返回風險分數
+    And 風險等級應該是 "medium"
 ```
 
-### 錯誤回應
-
-```json
-{
-  "error": "無效的電話號碼格式",
-  "message": "請提供有效的台灣電話號碼（手機：09XXXXXXXX，市話：0X-XXXXXXXX）"
-}
-```
-
-## 支援的電話號碼格式
-
-- **手機號碼**：`09XXXXXXXX` (10 位數字)
-- **市話號碼**：`0X-XXXXXXXX` 或 `0XX-XXXXXXX`
-
-## 風險等級
-
-- **低風險 (low)**：0 - 29.9 分
-- **中等風險 (medium)**：30 - 69.9 分
-- **高風險 (high)**：70 - 100 分
-
-## 開發
-
-### 建置
-
-```bash
-go build -o phone-risk-api
-```
-
-### 測試
-
-```bash
-go test ./...
-```
-
-### 查看詳細的 API 測試範例
-
-請參考 [api_test.md](./api_test.md) 檔案
+這種方法讓技術需求變得更容易理解，同時提高測試覆蓋率和程式碼品質。
